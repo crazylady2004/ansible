@@ -1,0 +1,79 @@
+- hosts: all
+  become: true
+  vars:
+    container_count: 4
+    default_container_name: docker
+    default_container_image: ubuntu
+    default_container_command: sleep 1
+    user: root
+    github: ['lvenries','ponsfrilus']
+
+  tasks:
+    - name: Install aptitude
+      apt:
+        name: aptitude
+        state: latest
+        update_cache: true
+    - name: Install required system packages
+      apt:
+        pkg:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - python3-pip
+          - software-properties-common
+          - python3-pip
+          - virtualenv
+          - python3-setuptools
+        state: latest
+        update_cache: true
+
+    - name: Add Docker GPG apt Key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker Repository
+      apt_repository:
+        repo: deb https://download.docker.com/linux/ubuntu focal stable
+        state: present
+
+    - name: Update apt and install docker-ce
+      apt:
+        name: docker-ce
+        state: latest
+        update_cache: true
+
+    - name: Make sure we have a 'admin' group
+      ansible.builtin.group:
+        name: admin
+        state: present
+      become: true
+
+    - name: Create User
+      ansible.builtin.user:
+        name: "{{ user }}"
+        groups:
+          - admin
+          - docker
+        shell: /bin/bash
+      become: true
+
+    - name: Allows sudo with no password
+      community.general.sudoers:
+        name: "allows-sudo-with-no-password"
+        user: "{{ user }}"
+        commands: ALL
+        nopassword: true
+      become: true
+
+
+    - name: Set authorized keys taken from url
+      ansible.posix.authorized_key:
+        user: "{{ user }}"
+        state: present      
+        key: https://github.com/{{ item }}.keys
+      with_items: "{{ github }}"
+
+      
+

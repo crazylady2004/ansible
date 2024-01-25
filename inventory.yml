@@ -1,0 +1,6 @@
+all:
+  hosts:
+    pi01:
+      ansible_host: 128.178.11.29
+      ansible_user: dorer
+      ansible_ssh_pass: 123456789

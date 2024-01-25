@@ -1,0 +1,8 @@
+- name: My first play
+  hosts: localhost
+  vars:
+    my_name: emilie
+  tasks:
+    - name: Display my name
+      debug:
+        msg: 'My name is {{ my_name }}'
